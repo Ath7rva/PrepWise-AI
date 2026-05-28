@@ -1,5 +1,5 @@
 require("dotenv").config();
-
+const historyRoutes = require("./routes/historyRoutes");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -16,6 +16,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/evaluation", evaluationRoutes);
+app.use("/api/history", historyRoutes);
 
 // MongoDB Connection
 mongoose
