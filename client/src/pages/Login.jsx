@@ -23,7 +23,7 @@ function Login() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+        "https://prepwise-ai-backend-a16j.onrender.com/api/auth/login",
         formData
       );
 

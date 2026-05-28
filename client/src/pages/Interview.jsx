@@ -13,7 +13,7 @@ function Interview() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/api/ai/generate",
+        "https://prepwise-ai-backend-a16j.onrender.com/api/ai/generate",
         {
           role,
         }

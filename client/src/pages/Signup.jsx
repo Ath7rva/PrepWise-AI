@@ -24,7 +24,7 @@ function Signup() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/register",
+        "https://prepwise-ai-backend-a16j.onrender.com/api/auth/register",
         formData
       );
 
