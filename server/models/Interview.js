@@ -29,6 +29,22 @@ const interviewSchema = new mongoose.Schema(
     score: {
       type: Number,
     },
+
+    technicalScore: {
+  type: Number,
+},
+
+communicationScore: {
+  type: Number,
+},
+
+confidenceScore: {
+  type: Number,
+},
+
+problemSolvingScore: {
+  type: Number,
+},
   },
   { timestamps: true }
 );

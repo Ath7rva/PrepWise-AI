@@ -6,6 +6,8 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const evaluationRoutes = require("./routes/evaluationRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
+const roadmapRoutes = require("./routes/roadmapRoutes");
 
 
 const app = express();
@@ -17,6 +19,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/evaluation", evaluationRoutes);
 app.use("/api/history", historyRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/roadmap", roadmapRoutes);
 
 // MongoDB Connection
 mongoose

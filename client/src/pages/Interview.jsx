@@ -3,7 +3,6 @@ import jsPDF from "jspdf";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-
 import {
   CircularProgressbar,
   buildStyles,
@@ -18,12 +17,15 @@ import {
   FaMicrophone,
   FaStop,
 } from "react-icons/fa";
- 
+
 function Interview() {
   const [warning, setWarning] = useState("");
   const [listening, setListening] = useState(false);
+  const [roadmap, setRoadmap] = useState("");
+  const [roadmapLoading, setRoadmapLoading] = useState(false);
   const [displayedFeedback, setDisplayedFeedback] = useState("");
   const [scores, setScores] = useState(null);
+
   const [role, setRole] = useState("");
   const [questions, setQuestions] = useState([]);
   const [selectedQuestion, setSelectedQuestion] = useState("");
@@ -33,63 +35,30 @@ function Interview() {
   const [evaluating, setEvaluating] = useState(false);
 
   const currentAnswer = answers[selectedQuestion] || "";
-  const allQuestionsAnswered =
-  questions.length > 0 &&
-  questions.every((question) => answers[question]?.trim());
-
-const allQuestionsEvaluated =
-  questions.length > 0 &&
-  questions.every((question) => feedbacks[question]?.trim());
-
-const canDownloadReport =
-  allQuestionsAnswered && allQuestionsEvaluated;
   const currentFeedback = feedbacks[selectedQuestion] || "";
 
-  const startListening = () => {
-  if (!selectedQuestion) {
-    alert("Please select a question first.");
-    return;
-  }
+  const allQuestionsAnswered =
+    questions.length > 0 &&
+    questions.every((question) => answers[question]?.trim());
 
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
+  const allQuestionsEvaluated =
+    questions.length > 0 &&
+    questions.every((question) => feedbacks[question]?.trim());
 
-  if (!SpeechRecognition) {
-    alert("Speech recognition is not supported in this browser. Use Chrome.");
-    return;
-  }
+  const canDownloadReport =
+    allQuestionsAnswered && allQuestionsEvaluated;
 
-  const recognition = new SpeechRecognition();
+      const showWarning = (message) => {
+    setWarning(message);
 
-  recognition.lang = "en-US";
-  recognition.interimResults = false;
-  recognition.continuous = false;
-
-  setListening(true);
-
-  recognition.start();
-
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript;
-
-    handleAnswerChange(
-      selectedQuestion,
-      `${currentAnswer} ${transcript}`.trim()
-    );
+    setTimeout(() => {
+      setWarning("");
+    }, 3000);
   };
-
-  recognition.onerror = (event) => {
-    console.log(event.error);
-    alert("Speech recognition failed. Try again.");
-    setListening(false);
-  };
-
-  recognition.onend = () => {
-    setListening(false);
-  };
-};
 
   const handleAnswerChange = (question, value) => {
+    if (!question) return;
+
     setAnswers({
       ...answers,
       [question]: value,
@@ -97,23 +66,66 @@ const canDownloadReport =
   };
 
   const typeFeedback = (text) => {
-  setDisplayedFeedback("");
+    setDisplayedFeedback("");
 
-  let index = 0;
+    let index = 0;
 
-  const interval = setInterval(() => {
-    setDisplayedFeedback((prev) => prev + text.charAt(index));
-    index++;
+    const interval = setInterval(() => {
+      setDisplayedFeedback((prev) => prev + text.charAt(index));
+      index++;
 
-    if (index >= text.length) {
-      clearInterval(interval);
+      if (index >= text.length) {
+        clearInterval(interval);
+      }
+    }, 15);
+  };
+
+  const startListening = () => {
+    if (!selectedQuestion) {
+      showWarning("Please select a question first.");
+      return;
     }
-  }, 15);
-};
+
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      showWarning("Speech recognition is only supported in Chrome.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    setListening(true);
+    recognition.start();
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+
+      handleAnswerChange(
+        selectedQuestion,
+        `${currentAnswer} ${transcript}`.trim()
+      );
+    };
+
+    recognition.onerror = (event) => {
+      console.log(event.error);
+      showWarning("Speech recognition failed. Try again.");
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+  };
 
   const generateQuestions = async () => {
     if (!role) {
-      setWarning("Please select a role first.");
+      showWarning("Please select a role first.");
       return;
     }
 
@@ -123,6 +135,9 @@ const canDownloadReport =
       setSelectedQuestion("");
       setAnswers({});
       setFeedbacks({});
+      setDisplayedFeedback("");
+      setScores(null);
+      setRoadmap("");
 
       const res = await axios.post(
         "https://prepwise-ai-backend-a16j.onrender.com/api/ai/generate",
@@ -140,94 +155,86 @@ const canDownloadReport =
       setQuestions(generatedQuestions);
     } catch (error) {
       console.log(error);
-      alert("Failed to generate questions.");
+      showWarning("Failed to generate questions.");
     } finally {
       setLoading(false);
     }
   };
 
   const evaluateAllAnswers = async () => {
-  const unansweredQuestion = questions.find(
-    (question) => !answers[question]?.trim()
-  );
+    const unansweredQuestion = questions.find(
+      (question) => !answers[question]?.trim()
+    );
 
-  if (unansweredQuestion) {
-    setSelectedQuestion(unansweredQuestion);
-    setWarning("Answer all questions before evaluating");
-
-    setTimeout(() => {
-      setWarning("");
-    }, 3000);
-
-    return;
-  }
-
-  try {
-    setEvaluating(true);
-
-    const newFeedbacks = {};
-
-    for (const question of questions) {
-      const res = await axios.post(
-        "https://prepwise-ai-backend-a16j.onrender.com/api/evaluation/evaluate",
-        {
-          role,
-          question,
-          answer: answers[question],
-        }
-      );
-
-      newFeedbacks[question] = res.data.feedback;
-    }
-
-    setFeedbacks(newFeedbacks);
-  } catch (error) {
-    console.log(error);
-    alert("Evaluation failed.");
-  } finally {
-    setEvaluating(false);
-  }
-};
-
-  const evaluateAnswer = async () => {
-    if (!selectedQuestion) {
-      alert("Please select a question first.");
-      return;
-    }
-
-    if (!currentAnswer.trim()) {
-      alert("Please provide an answer before evaluating.");
+    if (unansweredQuestion) {
+      setSelectedQuestion(unansweredQuestion);
+      setDisplayedFeedback(feedbacks[unansweredQuestion] || "");
+      showWarning("Answer all questions before evaluating");
       return;
     }
 
     try {
       setEvaluating(true);
 
+      const newFeedbacks = {};
+      let latestScores = null;
+
+      for (const question of questions) {
+        const res = await axios.post(
+          "http://localhost:5000/api/evaluation/evaluate",
+          {
+            role,
+            question,
+            answer: answers[question],
+          }
+        );
+
+        newFeedbacks[question] = res.data.feedback;
+        latestScores = res.data.scores;
+      }
+
+      setFeedbacks(newFeedbacks);
+      setScores(latestScores);
+
+      if (selectedQuestion) {
+        typeFeedback(newFeedbacks[selectedQuestion]);
+      } else if (questions.length > 0) {
+        setSelectedQuestion(questions[0]);
+        typeFeedback(newFeedbacks[questions[0]]);
+      }
+    } catch (error) {
+      console.log(error);
+      showWarning("Evaluation failed.");
+    } finally {
+      setEvaluating(false);
+    }
+  };
+
+  const generateRoadmap = async () => {
+    if (!canDownloadReport) {
+      showWarning("Please answer and evaluate all questions first.");
+      return;
+    }
+
+    try {
+      setRoadmapLoading(true);
+
       const res = await axios.post(
-        "https://prepwise-ai-backend-a16j.onrender.com/api/evaluation/evaluate",
+        "http://localhost:5000/api/roadmap/generate",
         {
           role,
-          question: selectedQuestion,
-          answer: currentAnswer,
+          questions,
+          answers,
+          feedbacks,
         }
       );
 
-      setFeedbacks({
-        ...feedbacks,
-        [selectedQuestion]: res.data.feedback,
-      });
-      typeFeedback(res.data.feedback);
-      setScores({
-        technical: 86,
-        communication: 78,
-        confidence: 82,
-        problemSolving: 88,
-      });
+      setRoadmap(res.data.roadmap);
     } catch (error) {
       console.log(error);
-      alert("Evaluation failed.");
+      showWarning("Roadmap generation failed.");
     } finally {
-      setEvaluating(false);
+      setRoadmapLoading(false);
     }
   };
 
@@ -291,18 +298,40 @@ const canDownloadReport =
       y += 12;
     });
 
+    if (roadmap) {
+      doc.addPage();
+      y = 20;
+
+      doc.setFontSize(18);
+      doc.text("Personalized Improvement Roadmap", 20, y);
+      y += 12;
+
+      doc.setFontSize(12);
+
+      const roadmapLines = doc.splitTextToSize(roadmap, 170);
+
+      roadmapLines.forEach((line) => {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+
+        doc.text(line, 20, y);
+        y += 7;
+      });
+    }
+
     doc.save("PrepWise_Full_Interview_Report.pdf");
   };
 
-  return (
+    return (
     <div className="relative min-h-screen bg-black text-white overflow-hidden">
-      {/* Warning Popup */}
-    {warning && (
-      <div className="fixed top-6 right-6 z-50 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg animate-pulse">
-        {warning}
-      </div>
-    )}
-      
+      {warning && (
+        <div className="fixed top-6 right-6 z-50 bg-red-500 text-white px-6 py-4 rounded-2xl shadow-lg animate-pulse">
+          {warning}
+        </div>
+      )}
+
       <div className="absolute top-0 left-0 w-96 h-96 bg-cyan-500 opacity-20 blur-3xl rounded-full"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500 opacity-20 blur-3xl rounded-full"></div>
 
@@ -371,8 +400,8 @@ const canDownloadReport =
                     whileHover={{ scale: 1.02 }}
                     key={index}
                     onClick={() => {
-                    setSelectedQuestion(question);
-                    setDisplayedFeedback(feedbacks[question] || "");
+                      setSelectedQuestion(question);
+                      setDisplayedFeedback(feedbacks[question] || "");
                     }}
                     className={`cursor-pointer p-5 rounded-2xl border transition ${
                       selectedQuestion === question
@@ -380,13 +409,21 @@ const canDownloadReport =
                         : "bg-slate-900/70 border-slate-800 hover:border-cyan-400"
                     }`}
                   >
-                    <p>{question}</p>
+                    <div className="flex justify-between gap-4">
+                      <p>{question}</p>
+
+                      {answers[question]?.trim() && (
+                        <span className="text-green-400 text-sm">
+                          Answered
+                        </span>
+                      )}
+                    </div>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
 
-            <motion.div
+                        <motion.div
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8"
@@ -412,108 +449,140 @@ const canDownloadReport =
               ></textarea>
 
               <button
-  onClick={startListening}
-  className={`mt-4 flex items-center gap-3 px-6 py-3 rounded-2xl font-semibold transition ${
-    listening
-      ? "bg-red-500 hover:bg-red-600"
-      : "bg-cyan-500 hover:bg-cyan-600"
-  }`}
->
-  {listening ? <FaStop /> : <FaMicrophone />}
-  {listening ? "Listening..." : "Speak Answer"}
-</button>
+                onClick={startListening}
+                className={`mt-4 flex items-center gap-3 px-6 py-3 rounded-2xl font-semibold transition ${
+                  listening
+                    ? "bg-red-500 hover:bg-red-600"
+                    : "bg-cyan-500 hover:bg-cyan-600"
+                }`}
+              >
+                {listening ? <FaStop /> : <FaMicrophone />}
+                {listening ? "Listening..." : "Speak Answer"}
+              </button>
 
               <button
                 onClick={evaluateAllAnswers}
                 className="mt-6 bg-purple-500 hover:bg-purple-600 transition px-8 py-4 rounded-2xl font-semibold text-lg shadow-lg shadow-purple-500/30"
               >
-                {evaluating ? "Evaluating All Answers..." : "Evaluate Full Interview"}
+                {evaluating
+                  ? "Evaluating All Answers..."
+                  : "Evaluate Full Interview"}
               </button>
 
               {currentFeedback && (
-  <>
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="mt-8 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 whitespace-pre-line"
-    >
-      <h3 className="text-2xl font-bold text-cyan-400 mb-4">
-        AI Feedback
-      </h3>
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="mt-8 bg-slate-900/80 border border-slate-800 rounded-2xl p-6 whitespace-pre-line"
+                  >
+                    <h3 className="text-2xl font-bold text-cyan-400 mb-4">
+                      AI Feedback
+                    </h3>
 
-      <p className="text-slate-300 leading-8">
-        {displayedFeedback}
-      </p>
-    </motion.div>
+                    <p className="text-slate-300 leading-8">
+                      {displayedFeedback}
+                    </p>
+                  </motion.div>
 
-    {/* Score Rings */}
-    {scores && (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
-        {[
-          ["Technical", scores.technical],
-          ["Communication", scores.communication],
-          ["Confidence", scores.confidence],
-          ["Problem Solving", scores.problemSolving],
-        ].map(([label, value]) => (
-          <div
-            key={label}
-            className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 text-center"
-          >
-            <div className="w-24 h-24 mx-auto">
-              <CircularProgressbar
-                value={value}
-                text={`${value}%`}
-                styles={buildStyles({
-                  textColor: "#ffffff",
-                  pathColor: "#06b6d4",
-                  trailColor: "#1e293b",
-                })}
-              />
-            </div>
+                  {scores && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+                      {[
+                        ["Technical", scores.technical],
+                        ["Communication", scores.communication],
+                        ["Confidence", scores.confidence],
+                        ["Problem Solving", scores.problemSolving],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 text-center"
+                        >
+                          <div className="w-24 h-24 mx-auto">
+                            <CircularProgressbar
+                              value={value}
+                              text={`${value}%`}
+                              styles={buildStyles({
+                                textColor: "#ffffff",
+                                pathColor: "#06b6d4",
+                                trailColor: "#1e293b",
+                              })}
+                            />
+                          </div>
 
-            <p className="mt-4 text-slate-300 font-semibold">
-              {label}
-            </p>
-          </div>
-        ))}
-      </div>
-    )}
-  </>
-)}
-
-              
+                          <p className="mt-4 text-slate-300 font-semibold">
+                            {label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </motion.div>
           </div>
         )}
+
         {questions.length > 0 && (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="mt-10 backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 text-center"
-  >
-    <h2 className="text-3xl font-bold text-cyan-400 mb-3">
-      Interview Report
-    </h2>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-10 backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 text-center"
+          >
+            <h2 className="text-3xl font-bold text-cyan-400 mb-3">
+              Interview Report
+            </h2>
 
-    <p className="text-slate-400 mb-6">
-      Answer and evaluate all questions to unlock your full AI interview report.
-    </p>
+            <p className="text-slate-400 mb-6">
+              Answer and evaluate all questions to unlock your full AI interview report.
+            </p>
 
-    <button
-      onClick={downloadReport}
-      disabled={!canDownloadReport}
-      className={`px-8 py-4 rounded-2xl font-semibold text-lg transition ${
-        canDownloadReport
-          ? "bg-cyan-500 hover:bg-cyan-600 shadow-lg shadow-cyan-500/30"
-          : "bg-slate-700 cursor-not-allowed opacity-60"
-      }`}
-    >
-      {canDownloadReport
-        ? "Download Full PDF Report"
-        : "Complete All Evaluations First"}
-    </button>
-  </motion.div>
-)}
+            <div className="flex flex-col md:flex-row gap-4 justify-center">
+              <button
+                onClick={downloadReport}
+                disabled={!canDownloadReport}
+                className={`px-8 py-4 rounded-2xl font-semibold text-lg transition ${
+                  canDownloadReport
+                    ? "bg-cyan-500 hover:bg-cyan-600 shadow-lg shadow-cyan-500/30"
+                    : "bg-slate-700 cursor-not-allowed opacity-60"
+                }`}
+              >
+                {canDownloadReport
+                  ? "Download Full PDF Report"
+                  : "Complete All Evaluations First"}
+              </button>
+
+              <button
+                onClick={generateRoadmap}
+                disabled={!canDownloadReport || roadmapLoading}
+                className={`px-8 py-4 rounded-2xl font-semibold text-lg transition ${
+                  canDownloadReport
+                    ? "bg-purple-500 hover:bg-purple-600 shadow-lg shadow-purple-500/30"
+                    : "bg-slate-700 cursor-not-allowed opacity-60"
+                }`}
+              >
+                {roadmapLoading
+                  ? "Generating Roadmap..."
+                  : "Generate Improvement Roadmap"}
+              </button>
+            </div>
+
+            {roadmap && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-8 text-left bg-slate-900/80 border border-slate-800 rounded-2xl p-6 whitespace-pre-line"
+              >
+                <h3 className="text-2xl font-bold text-purple-400 mb-4">
+                  Personalized Improvement Roadmap
+                </h3>
+
+                <p className="text-slate-300 leading-8">
+                  {roadmap}
+                </p>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   );
