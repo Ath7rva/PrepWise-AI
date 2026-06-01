@@ -5,6 +5,12 @@ const interviewSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      index: true,
+    },
+
+    session: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Session",
     },
 
     role: {
@@ -45,6 +51,30 @@ confidenceScore: {
 problemSolvingScore: {
   type: Number,
 },
+
+strengths: [
+  {
+    type: String,
+  },
+],
+
+weaknesses: [
+  {
+    type: String,
+  },
+],
+
+improvements: [
+  {
+    type: String,
+  },
+],
+
+betterAnswer: {
+  type: String,
+},
+
+
   },
   { timestamps: true }
 );

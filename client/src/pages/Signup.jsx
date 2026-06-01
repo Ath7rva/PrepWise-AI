@@ -1,7 +1,9 @@
- 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { FaArrowRight, FaEnvelope, FaKey, FaUser } from "react-icons/fa";
+import AuthShowcase from "../components/AuthShowcase";
+import { API_URL } from "../config/api";
 
 function Signup() {
   const navigate = useNavigate();
@@ -11,87 +13,115 @@ function Signup() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await axios.post(
-        "https://prepwise-ai-backend-a16j.onrender.com/api/auth/register",
-        formData
-      );
+      setLoading(true);
+      setError("");
 
-      alert("Signup Successful!");
+      const res = await axios.post(`${API_URL}/api/auth/register`, formData);
 
-      navigate("/login");
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+
+      navigate("/dashboard");
     } catch (error) {
-      alert(error.response.data.message);
+      setError(error.response?.data?.message || "Signup failed. Try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="w-full max-w-md bg-slate-900/70 backdrop-blur-lg border border-slate-800 rounded-2xl p-8 shadow-2xl">
-        <h1 className="text-4xl font-bold text-center text-cyan-400 mb-8">
-          Create Account
-        </h1>
+    <AuthShowcase
+      title="Create your account"
+      subtitle="Start a private PrepWise AI workspace for mock interviews, resume-aware questions, performance analytics, and personalized practice plans."
+      footerText="Already have an account?"
+      footerLinkText="Sign in"
+      footerLinkTo="/login"
+    >
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <Field
+          icon={<FaUser />}
+          label="Full name"
+          type="text"
+          name="name"
+          value={formData.name}
+          placeholder="Your name"
+          onChange={handleChange}
+        />
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-5"
+        <Field
+          icon={<FaEnvelope />}
+          label="Email address"
+          type="email"
+          name="email"
+          value={formData.email}
+          placeholder="you@example.com"
+          onChange={handleChange}
+        />
+
+        <Field
+          icon={<FaKey />}
+          label="Password"
+          type="password"
+          name="password"
+          value={formData.password}
+          placeholder="Create a password"
+          minLength="6"
+          onChange={handleChange}
+        />
+
+        {error && (
+          <div className="rounded-2xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-cyan-400 px-5 py-4 text-base font-black text-slate-950 shadow-lg shadow-cyan-500/25 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter your name"
-            onChange={handleChange}
-            className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-400"
-          />
+          {loading ? "Creating account..." : "Start Preparing"}
+          <FaArrowRight />
+        </button>
+      </form>
+    </AuthShowcase>
+  );
+}
 
-          <input
-            type="email"
-            name="email"
-            placeholder="Enter your email"
-            onChange={handleChange}
-            className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-400"
-          />
-
-          <input
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            onChange={handleChange}
-            className="bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white outline-none focus:border-cyan-400"
-          />
-
-          <button
-            type="submit"
-            className="bg-cyan-500 hover:bg-cyan-600 transition rounded-xl py-3 text-lg font-semibold"
-          >
-            Signup
-          </button>
-        </form>
-
-        <p className="text-slate-400 text-center mt-6">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-cyan-400 hover:underline"
-          >
-            Login
-          </Link>
-        </p>
+function Field({ icon, label, ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-bold text-slate-300">{label}</span>
+      <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-black/35 px-4 py-3 focus-within:border-cyan-300">
+        <span className="text-cyan-300">{icon}</span>
+        <input
+          required
+          className="w-full bg-transparent text-white outline-none placeholder:text-slate-600"
+          {...props}
+        />
       </div>
-    </div>
+    </label>
   );
 }
 
 export default Signup;
- 

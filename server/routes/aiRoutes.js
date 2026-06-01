@@ -1,4 +1,5 @@
 const express = require("express");
+const { protect } = require("../middleware/authMiddleware");
 
 const {
   generateInterviewQuestions,
@@ -6,7 +7,7 @@ const {
 
 const router = express.Router();
 
-router.post("/generate", generateInterviewQuestions);
+router.post("/generate", protect, generateInterviewQuestions);
 
 module.exports = router;
 
