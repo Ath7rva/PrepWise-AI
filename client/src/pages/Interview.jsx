@@ -29,6 +29,7 @@ function Interview() {
   const navigate = useNavigate();
   const recognitionRef = useRef(null);
   const synthRef = useRef(window.speechSynthesis);
+  const proctorGuardRef = useRef(null);
 
   const [role, setRole] = useState("");
   const [difficulty, setDifficulty] = useState("Intermediate");
@@ -280,6 +281,8 @@ function Interview() {
       const durationSeconds = sessionStartTime
         ? Math.round((Date.now() - sessionStartTime) / 1000)
         : 0;
+      const proctoringMedia =
+        (await proctorGuardRef.current?.getCapturedMedia?.()) || null;
 
       const res = await axios.post(`${API_URL}/api/evaluation/session`, {
         role,
@@ -294,6 +297,7 @@ function Interview() {
         questions,
         answers,
         durationSeconds,
+        proctoringMedia,
       });
 
       const newFeedbacks = {};
@@ -386,6 +390,7 @@ function Interview() {
     <div className="relative min-h-screen bg-[#f4f7fb] text-slate-950 overflow-hidden">
       {(phase === "permissions" || phase === "interview" || phase === "evaluating") && (
         <ProctorGuard
+          ref={proctorGuardRef}
           active={true}
           onReady={handleProctorReady}
           onTerminate={terminateInterview}
@@ -587,6 +592,7 @@ function Interview() {
 
               <div className="space-y-4 text-slate-600">
                 <p>• Camera and microphone permissions are required.</p>
+                <p>• The session stores 10 webcam photos and a 30-second recording for interview review.</p>
                 <p>• Keep your face visible in the camera.</p>
                 <p>• Do not switch tabs or click outside the interview window.</p>
                 <p>• Right click, copy, paste, and developer tools shortcuts are restricted.</p>

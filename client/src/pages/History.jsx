@@ -42,6 +42,7 @@ function History() {
     getQuestions(item)[0]?.feedback || item.feedback || "Not available.";
   const getArrayText = (items) =>
     Array.isArray(items) && items.length ? items.join("\n") : "Not available.";
+  const getProctoringMedia = (item) => item?.proctoringMedia || null;
   const getSelectedQuestion = () =>
     getQuestions(selectedInterview)[selectedQuestionIndex] ||
     getQuestions(selectedInterview)[0] ||
@@ -262,6 +263,10 @@ function History() {
                     </div>
 
                     <div className="space-y-6">
+                      <ProctoringMediaReview
+                        media={getProctoringMedia(selectedInterview)}
+                      />
+
                       <section>
                         <h3 className="text-xl font-bold text-cyan-700 mb-3">
                           Session Summary
@@ -475,6 +480,55 @@ function QuestionReview({
             text={getArrayText(selectedQuestion.improvements)}
           />
         </div>
+      </div>
+    </section>
+  );
+}
+
+function ProctoringMediaReview({ media }) {
+  const photos = media?.photos || [];
+  const video = media?.video;
+
+  if (!photos.length && !video?.dataUrl) return null;
+
+  return (
+    <section>
+      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-cyan-700">
+            Proctoring Media
+          </h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Saved identity snapshots and the 30-second interview recording.
+          </p>
+        </div>
+
+        <p className="text-sm font-bold text-slate-500">
+          {photos.length}/10 photos saved
+        </p>
+      </div>
+
+      <div className="space-y-5 rounded-3xl border border-slate-200 bg-[#f4f7fb]/40 p-5">
+        {video?.dataUrl && (
+          <video
+            controls
+            src={video.dataUrl}
+            className="h-64 w-full rounded-2xl border border-slate-200 bg-black object-contain"
+          />
+        )}
+
+        {photos.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+            {photos.slice(0, 10).map((photo, index) => (
+              <img
+                key={`${photo.capturedAt || "photo"}-${index}`}
+                src={photo.dataUrl}
+                alt={`Proctoring snapshot ${index + 1}`}
+                className="aspect-video w-full rounded-2xl border border-slate-200 bg-slate-100 object-cover"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

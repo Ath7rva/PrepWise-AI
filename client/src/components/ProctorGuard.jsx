@@ -1,10 +1,55 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
-function ProctorGuard({ active, onReady, onTerminate }) {
+const PHOTO_LIMIT = 10;
+const VIDEO_DURATION_MS = 30000;
+const PHOTO_INTERVAL_MS = 3000;
+const PHOTO_WIDTH = 360;
+const PHOTO_QUALITY = 0.55;
+
+const getSupportedMimeType = () => {
+  if (!("MediaRecorder" in window)) return "";
+
+  const options = [
+    "video/webm;codecs=vp9,opus",
+    "video/webm;codecs=vp8,opus",
+    "video/webm",
+  ];
+
+  return options.find((type) => MediaRecorder.isTypeSupported(type)) || "";
+};
+
+const blobToDataUrl = (blob) =>
+  new Promise((resolve) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => resolve(reader.result || "");
+    reader.onerror = () => resolve("");
+    reader.readAsDataURL(blob);
+  });
+
+const ProctorGuard = forwardRef(function ProctorGuard(
+  { active, onReady, onTerminate },
+  ref
+) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const warningLockRef = useRef(false);
   const readyCalledRef = useRef(false);
+  const photoIntervalRef = useRef(null);
+  const recordingTimeoutRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const videoChunksRef = useRef([]);
+  const snapshotsRef = useRef([]);
+  const recordingDataUrlRef = useRef("");
+  const recordingMimeTypeRef = useRef("");
+  const recordingPromiseRef = useRef(Promise.resolve(""));
+  const resolveRecordingRef = useRef(null);
 
   const [warnings, setWarnings] = useState(0);
   const [warningMessage, setWarningMessage] = useState("");
@@ -37,6 +82,145 @@ function ProctorGuard({ active, onReady, onTerminate }) {
     }, 2500);
   };
 
+  const captureSnapshot = () => {
+    const video = videoRef.current;
+
+    if (
+      !video ||
+      video.readyState < 2 ||
+      snapshotsRef.current.length >= PHOTO_LIMIT
+    ) {
+      return;
+    }
+
+    const sourceWidth = video.videoWidth || PHOTO_WIDTH;
+    const sourceHeight = video.videoHeight || Math.round((PHOTO_WIDTH * 3) / 4);
+    const width = PHOTO_WIDTH;
+    const height = Math.round((sourceHeight / sourceWidth) * width);
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    if (!context) return;
+
+    canvas.width = width;
+    canvas.height = height;
+    context.drawImage(video, 0, 0, width, height);
+
+    snapshotsRef.current = [
+      ...snapshotsRef.current,
+      {
+        capturedAt: new Date().toISOString(),
+        dataUrl: canvas.toDataURL("image/jpeg", PHOTO_QUALITY),
+      },
+    ];
+
+    if (snapshotsRef.current.length >= PHOTO_LIMIT && photoIntervalRef.current) {
+      clearInterval(photoIntervalRef.current);
+      photoIntervalRef.current = null;
+    }
+  };
+
+  const stopRecording = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const startMediaCapture = (stream) => {
+    snapshotsRef.current = [];
+    videoChunksRef.current = [];
+    recordingDataUrlRef.current = "";
+    recordingMimeTypeRef.current = "";
+
+    if (photoIntervalRef.current) {
+      clearInterval(photoIntervalRef.current);
+    }
+
+    setTimeout(captureSnapshot, 1000);
+    photoIntervalRef.current = setInterval(captureSnapshot, PHOTO_INTERVAL_MS);
+
+    if (!("MediaRecorder" in window)) {
+      recordingPromiseRef.current = Promise.resolve("");
+      return;
+    }
+
+    const mimeType = getSupportedMimeType();
+    recordingMimeTypeRef.current = mimeType || "video/webm";
+
+    recordingPromiseRef.current = new Promise((resolve) => {
+      resolveRecordingRef.current = resolve;
+    });
+
+    try {
+      const recorder = new MediaRecorder(stream, {
+        ...(mimeType ? { mimeType } : {}),
+        videoBitsPerSecond: 250000,
+        audioBitsPerSecond: 32000,
+      });
+
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data?.size) {
+          videoChunksRef.current.push(event.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        const blob = new Blob(videoChunksRef.current, {
+          type: recordingMimeTypeRef.current,
+        });
+
+        recordingDataUrlRef.current = blob.size ? await blobToDataUrl(blob) : "";
+        resolveRecordingRef.current?.(recordingDataUrlRef.current);
+        resolveRecordingRef.current = null;
+      };
+
+      recorder.start(1000);
+      recordingTimeoutRef.current = setTimeout(stopRecording, VIDEO_DURATION_MS);
+    } catch (error) {
+      console.log("Proctor recording unavailable:", error);
+      recordingPromiseRef.current = Promise.resolve("");
+      resolveRecordingRef.current?.("");
+      resolveRecordingRef.current = null;
+    }
+  };
+
+  const getCapturedMedia = async () => {
+    while (snapshotsRef.current.length < PHOTO_LIMIT && videoRef.current) {
+      const beforeCount = snapshotsRef.current.length;
+      captureSnapshot();
+
+      if (snapshotsRef.current.length === beforeCount) break;
+    }
+
+    stopRecording();
+    const videoDataUrl = await recordingPromiseRef.current;
+
+    return {
+      capturedAt: new Date().toISOString(),
+      photoCount: snapshotsRef.current.length,
+      photos: snapshotsRef.current,
+      video: videoDataUrl
+        ? {
+            capturedAt: new Date().toISOString(),
+            durationSeconds: 30,
+            mimeType: recordingMimeTypeRef.current || "video/webm",
+            dataUrl: videoDataUrl,
+          }
+        : null,
+    };
+  };
+
+  useImperativeHandle(ref, () => ({
+    getCapturedMedia,
+  }));
+
   useEffect(() => {
     if (!active) return;
 
@@ -55,6 +239,8 @@ function ProctorGuard({ active, onReady, onTerminate }) {
           videoRef.current.srcObject = stream;
         }
 
+        startMediaCapture(stream);
+
         setPermissionStatus("Permissions granted. Proctoring active.");
 
         if (!readyCalledRef.current) {
@@ -71,6 +257,13 @@ function ProctorGuard({ active, onReady, onTerminate }) {
     startPermissions();
 
     return () => {
+      if (photoIntervalRef.current) {
+        clearInterval(photoIntervalRef.current);
+        photoIntervalRef.current = null;
+      }
+
+      stopRecording();
+
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -218,6 +411,6 @@ function ProctorGuard({ active, onReady, onTerminate }) {
       )}
     </>
   );
-}
+});
 
 export default ProctorGuard;

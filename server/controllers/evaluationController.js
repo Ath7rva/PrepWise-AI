@@ -127,6 +127,7 @@ const evaluateSession = async (req, res) => {
       answers = {},
       durationSeconds = 0,
       warningCount = 0,
+      proctoringMedia = null,
     } = req.body;
 
     if (!role || !questions.length) {
@@ -215,6 +216,24 @@ Do not include extra text.
         betterAnswer: feedback.betterAnswer || "",
       };
     });
+    const sanitizedProctoringMedia = proctoringMedia
+      ? {
+          capturedAt: proctoringMedia.capturedAt || new Date(),
+          photoCount: Math.min(proctoringMedia.photos?.length || 0, 10),
+          photos: (proctoringMedia.photos || []).slice(0, 10).map((photo) => ({
+            capturedAt: photo.capturedAt || new Date(),
+            dataUrl: photo.dataUrl || "",
+          })),
+          video: proctoringMedia.video?.dataUrl
+            ? {
+                capturedAt: proctoringMedia.video.capturedAt || new Date(),
+                durationSeconds: proctoringMedia.video.durationSeconds || 30,
+                mimeType: proctoringMedia.video.mimeType || "video/webm",
+                dataUrl: proctoringMedia.video.dataUrl,
+              }
+            : null,
+        }
+      : null;
 
     const session = await Session.create({
       user: req.user,
@@ -240,6 +259,7 @@ Do not include extra text.
       weaknesses: parsed.weaknesses || [],
       improvements: parsed.improvements || [],
       nextPracticePlan: parsed.nextPracticePlan || [],
+      proctoringMedia: sanitizedProctoringMedia,
     });
 
     await Interview.insertMany(

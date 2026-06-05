@@ -41,6 +41,42 @@ const answerSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const proctorPhotoSchema = new mongoose.Schema(
+  {
+    capturedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    dataUrl: {
+      type: String,
+      default: "",
+    },
+  },
+  { _id: false }
+);
+
+const proctorVideoSchema = new mongoose.Schema(
+  {
+    capturedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    durationSeconds: {
+      type: Number,
+      default: 30,
+    },
+    mimeType: {
+      type: String,
+      default: "video/webm",
+    },
+    dataUrl: {
+      type: String,
+      default: "",
+    },
+  },
+  { _id: false }
+);
+
 const sessionSchema = new mongoose.Schema(
   {
     user: {
@@ -138,6 +174,21 @@ const sessionSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    proctoringMedia: {
+      capturedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      photoCount: {
+        type: Number,
+        default: 0,
+      },
+      photos: [proctorPhotoSchema],
+      video: {
+        type: proctorVideoSchema,
+        default: null,
+      },
+    },
   },
   { timestamps: true }
 );
