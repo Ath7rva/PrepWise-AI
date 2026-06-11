@@ -1,3 +1,16 @@
+## PrepWise Client Notes
+
+This frontend is the React + Vite client for PrepWise AI.
+
+### Local development
+
+```bash
+npm install
+npm run dev
+```
+
+The client reads `VITE_API_URL` from the environment. If it is not set, the code falls back to `http://localhost:5000` during local development and `https://prepwise-ai-backend-a16j.onrender.com` in production. See [`client/src/config/api.js`](C:/Users/salun/OneDrive/Desktop/PrepWise-AI/client/src/config/api.js).
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
