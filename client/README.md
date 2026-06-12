@@ -11,6 +11,10 @@ npm run dev
 
 The client reads `VITE_API_URL` from the environment. If it is not set, the code falls back to `http://localhost:5000` during local development and `https://prepwise-ai-backend-a16j.onrender.com` in production. See [`client/src/config/api.js`](C:/Users/salun/OneDrive/Desktop/PrepWise-AI/client/src/config/api.js).
 
+### Auth behavior
+
+After login or signup, the client stores the JWT in `localStorage` under `token` and reuses it through an Axios interceptor that sets the `Authorization` header automatically. The user payload is stored separately under `user`.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
