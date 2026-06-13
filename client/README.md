@@ -15,6 +15,10 @@ The client reads `VITE_API_URL` from the environment. If it is not set, the code
 
 After login or signup, the client stores the JWT in `localStorage` under `token` and reuses it through an Axios interceptor that sets the `Authorization` header automatically. The user payload is stored separately under `user`.
 
+### Interview session output
+
+Completed interviews can be exported locally as `PrepWise_Proctored_Interview_Report.pdf`. The interview flow also submits captured proctoring media with the session evaluation payload, including snapshots and a WebM video clip.
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
