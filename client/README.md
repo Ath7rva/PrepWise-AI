@@ -19,6 +19,11 @@ After login or signup, the client stores the JWT in `localStorage` under `token`
 
 Completed interviews can be exported locally as `PrepWise_Proctored_Interview_Report.pdf`. The interview flow also submits captured proctoring media with the session evaluation payload, including snapshots and a WebM video clip.
 
+### Frontend scripts
+
+`npm run dev` starts the Vite dev server, `npm run build` creates the production bundle, `npm run lint` runs ESLint, and `npm run preview` serves the built client locally.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
