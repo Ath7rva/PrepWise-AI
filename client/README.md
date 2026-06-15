@@ -24,6 +24,11 @@ Completed interviews can be exported locally as `PrepWise_Proctored_Interview_Re
 `npm run dev` starts the Vite dev server, `npm run build` creates the production bundle, `npm run lint` runs ESLint, and `npm run preview` serves the built client locally.
 
 
+### Backend scripts
+
+The Node backend uses `npm run dev` for `nodemon server.js` during development and `npm start` for the plain `node server.js` production-style entrypoint.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
