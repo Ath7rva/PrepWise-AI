@@ -29,6 +29,11 @@ Completed interviews can be exported locally as `PrepWise_Proctored_Interview_Re
 The Node backend uses `npm run dev` for `nodemon server.js` during development and `npm start` for the plain `node server.js` production-style entrypoint.
 
 
+### Protected pages
+
+The app protects `/analytics`, `/history`, `/dashboard`, `/interview`, and `/prep-center` with `ProtectedRoute`, while `/`, `/login`, and `/signup` stay public.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
