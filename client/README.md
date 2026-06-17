@@ -34,6 +34,11 @@ The Node backend uses `npm run dev` for `nodemon server.js` during development a
 The app protects `/analytics`, `/history`, `/dashboard`, `/interview`, and `/prep-center` with `ProtectedRoute`, while `/`, `/login`, and `/signup` stay public.
 
 
+### Theme preference
+
+The floating theme toggle defaults to dark mode and persists the current theme in `localStorage` under `theme`.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
