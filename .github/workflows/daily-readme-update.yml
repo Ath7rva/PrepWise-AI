@@ -3,7 +3,7 @@ name: Daily README Update
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 17 * * *"
+    - cron: "30 3 * * *"
 
 permissions:
   contents: write

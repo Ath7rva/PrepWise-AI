@@ -8,8 +8,8 @@ import sys
 
 
 IST = timezone(timedelta(hours=5, minutes=30))
-START_AT = datetime(2026, 6, 14, 22, 47, 0, tzinfo=IST)
-END_AT = datetime(2026, 7, 1, 23, 59, 59, tzinfo=IST)
+START_AT = datetime(2026, 6, 18, 9, 0, 0, tzinfo=IST)
+END_AT = datetime(2026, 7, 17, 23, 59, 59, tzinfo=IST)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 README_PATH = REPO_ROOT / "client" / "README.md"
