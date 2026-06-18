@@ -31,8 +31,8 @@ jobs:
       - name: Commit README change
         if: steps.update.outputs.changed == 'true'
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "Ath7rva"
+          git config user.email "salunkeatharva07@gmail.com"
           git add client/README.md
           git commit -m "${{ steps.update.outputs.commit_message }}"
 
