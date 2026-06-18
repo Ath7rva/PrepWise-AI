@@ -39,6 +39,11 @@ The app protects `/analytics`, `/history`, `/dashboard`, `/interview`, and `/pre
 The floating theme toggle defaults to dark mode and persists the current theme in `localStorage` under `theme`.
 
 
+### Backend route map
+
+The Express server mounts `/api/auth`, `/api/ai`, `/api/evaluation`, `/api/history`, `/api/analytics`, and `/api/roadmap` from `server/server.js`.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
