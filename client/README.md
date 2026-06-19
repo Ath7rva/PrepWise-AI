@@ -44,6 +44,11 @@ The floating theme toggle defaults to dark mode and persists the current theme i
 The Express server mounts `/api/auth`, `/api/ai`, `/api/evaluation`, `/api/history`, `/api/analytics`, and `/api/roadmap` from `server/server.js`.
 
 
+### Backend defaults
+
+The backend enables CORS, accepts JSON payloads up to 10 MB, exposes a root health route that returns `API Running Successfully`, and defaults to port `5000` when `PORT` is not set.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
