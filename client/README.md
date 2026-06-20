@@ -49,6 +49,11 @@ The Express server mounts `/api/auth`, `/api/ai`, `/api/evaluation`, `/api/histo
 The backend enables CORS, accepts JSON payloads up to 10 MB, exposes a root health route that returns `API Running Successfully`, and defaults to port `5000` when `PORT` is not set.
 
 
+### Server environment
+
+Current backend wiring depends on `MONGO_URI` for MongoDB, `JWT_SECRET` for auth token signing, and `OPENROUTER_API_KEY` for the AI-backed controllers.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
