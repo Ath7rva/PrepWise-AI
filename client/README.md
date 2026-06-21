@@ -54,6 +54,11 @@ The backend enables CORS, accepts JSON payloads up to 10 MB, exposes a root heal
 Current backend wiring depends on `MONGO_URI` for MongoDB, `JWT_SECRET` for auth token signing, and `OPENROUTER_API_KEY` for the AI-backed controllers.
 
 
+### AI integration
+
+The `ai`, `evaluation`, and `roadmap` controllers call OpenRouter chat completions from the backend instead of sending provider keys to the frontend.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
