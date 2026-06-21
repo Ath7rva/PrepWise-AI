@@ -59,6 +59,11 @@ Current backend wiring depends on `MONGO_URI` for MongoDB, `JWT_SECRET` for auth
 The `ai`, `evaluation`, and `roadmap` controllers call OpenRouter chat completions from the backend instead of sending provider keys to the frontend.
 
 
+### Dashboard data
+
+The dashboard fetches both analytics and recent interview history so the main user view can summarize performance and past sessions together.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
