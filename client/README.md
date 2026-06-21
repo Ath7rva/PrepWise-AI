@@ -64,6 +64,11 @@ The `ai`, `evaluation`, and `roadmap` controllers call OpenRouter chat completio
 The dashboard fetches both analytics and recent interview history so the main user view can summarize performance and past sessions together.
 
 
+### History tools
+
+The history page keeps a searchable interview list, supports client-side filtering, and lets users drill into question-by-question feedback from saved sessions.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
