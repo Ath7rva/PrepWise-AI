@@ -69,6 +69,11 @@ The dashboard fetches both analytics and recent interview history so the main us
 The history page keeps a searchable interview list, supports client-side filtering, and lets users drill into question-by-question feedback from saved sessions.
 
 
+### Interview setup
+
+Interview setup currently supports role, difficulty, experience level, tech stack, company, job description, resume text, practice mode, and an optional targeted skill.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
