@@ -74,6 +74,11 @@ The history page keeps a searchable interview list, supports client-side filteri
 Interview setup currently supports role, difficulty, experience level, tech stack, company, job description, resume text, practice mode, and an optional targeted skill.
 
 
+### Voice input
+
+The interview page uses the browser speech-recognition API through `window.SpeechRecognition || window.webkitSpeechRecognition` for spoken answers.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
