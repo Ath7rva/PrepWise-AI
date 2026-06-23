@@ -79,6 +79,11 @@ Interview setup currently supports role, difficulty, experience level, tech stac
 The interview page uses the browser speech-recognition API through `window.SpeechRecognition || window.webkitSpeechRecognition` for spoken answers.
 
 
+### Question narration
+
+The interview flow also uses `window.speechSynthesis` to read questions aloud before the answer phase starts.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
