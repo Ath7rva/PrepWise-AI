@@ -84,6 +84,11 @@ The interview page uses the browser speech-recognition API through `window.Speec
 The interview flow also uses `window.speechSynthesis` to read questions aloud before the answer phase starts.
 
 
+### Proctor snapshots
+
+During proctored sessions, `ProctorGuard` captures up to 10 JPEG snapshots at intervals while the interview is active.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
