@@ -89,6 +89,11 @@ The interview flow also uses `window.speechSynthesis` to read questions aloud be
 During proctored sessions, `ProctorGuard` captures up to 10 JPEG snapshots at intervals while the interview is active.
 
 
+### Proctor video clip
+
+The same proctoring flow records up to 30 seconds of WebM camera and microphone footage before packaging the session media for submission.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
