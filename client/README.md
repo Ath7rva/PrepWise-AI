@@ -94,6 +94,11 @@ During proctored sessions, `ProctorGuard` captures up to 10 JPEG snapshots at in
 The same proctoring flow records up to 30 seconds of WebM camera and microphone footage before packaging the session media for submission.
 
 
+### Resume PDF parsing
+
+Prep Center reads PDF resumes client-side with `pdfjs-dist`, so text-based PDFs can be analyzed without sending the original file to the server first.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
