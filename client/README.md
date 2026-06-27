@@ -99,6 +99,11 @@ The same proctoring flow records up to 30 seconds of WebM camera and microphone 
 Prep Center reads PDF resumes client-side with `pdfjs-dist`, so text-based PDFs can be analyzed without sending the original file to the server first.
 
 
+### Supported resume file types
+
+Besides PDFs, Prep Center currently accepts `.txt`, `.md`, `.csv`, and `.json` resume files for quick text import.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
