@@ -104,6 +104,11 @@ Prep Center reads PDF resumes client-side with `pdfjs-dist`, so text-based PDFs 
 Besides PDFs, Prep Center currently accepts `.txt`, `.md`, `.csv`, and `.json` resume files for quick text import.
 
 
+### Resume analysis payload
+
+Before calling `/api/ai/analyze-fit`, Prep Center trims resume text and job description payloads so large inputs stay within the current backend request limits.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
