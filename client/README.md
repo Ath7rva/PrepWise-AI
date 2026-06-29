@@ -109,6 +109,11 @@ Besides PDFs, Prep Center currently accepts `.txt`, `.md`, `.csv`, and `.json` r
 Before calling `/api/ai/analyze-fit`, Prep Center trims resume text and job description payloads so large inputs stay within the current backend request limits.
 
 
+### Tailored interview launch
+
+Prep Center can launch the interview page directly with `practiceMode` set to `resume-jd`, carrying the chosen role, resume text, and job description into the session.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
