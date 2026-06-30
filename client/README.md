@@ -114,6 +114,11 @@ Before calling `/api/ai/analyze-fit`, Prep Center trims resume text and job desc
 Prep Center can launch the interview page directly with `practiceMode` set to `resume-jd`, carrying the chosen role, resume text, and job description into the session.
 
 
+### Client libraries
+
+The current frontend dependency set includes `recharts` for analytics visuals, `react-circular-progressbar` for score displays, and `jspdf` for report export.
+
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
